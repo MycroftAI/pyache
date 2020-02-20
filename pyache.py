@@ -16,6 +16,7 @@ import numpy as np
 from hashlib import md5
 from glob import glob
 from os import makedirs
+from os import name as os_name
 from os.path import join, getmtime, isfile
 from typing import Callable, Union
 
@@ -30,12 +31,23 @@ class Pyache:
         max_loaders: Maximum number of loader caches before others are deleted
     """
 
+    """
+    Returns:
+        an OS dependent string used as a delimiter in file names to improve readability.
+    """
+    @property
+    def file_delimiter(self):
+        if os_name == "nt":
+            return "_"
+        else:
+            return "::"  # Keeping backwards compatibility (invalid file name character on windows)
+
     def __init__(self, folder: str, loader: Callable, loader_id: str, max_loaders=3):
         self.folder = folder
         self.loader = loader
         self.loader_id = loader_id
         self.max_loaders = max_loaders
-        self.loader_folder = join(folder, 'loader::{}'.format(loader_id))
+        self.loader_folder = join(folder, 'loader{}{}'.format(self.file_delimiter, loader_id))
         self.data_folder = join(self.loader_folder, 'data')
         makedirs(self.data_folder, exist_ok=True)
 
@@ -69,9 +81,11 @@ class Pyache:
         Returns:
             np.ndarray: All data from filenames as a single numpy array
         """
-        my_suffix = 'cacheblock::' + md5(''.join(sorted(filenames)).encode()).hexdigest() + '.npy'
-        self._remove_old_resource(self.folder, self.max_loaders, 'loader::', 'loader::{}/'.format(self.loader_id))
-        self._remove_old_resource(self.loader_folder, self.max_loaders, 'cacheblock::', my_suffix)
+        my_suffix = 'cacheblock' + self.file_delimiter + md5(''.join(sorted(filenames)).encode()).hexdigest() + '.npy'
+        self._remove_old_resource(self.folder, self.max_loaders, 'loader' + self.file_delimiter,
+                                  'loader{}{}/'.format(self.file_delimiter, self.loader_id))
+
+        self._remove_old_resource(self.loader_folder, self.max_loaders, 'cacheblock' + self.file_delimiter, my_suffix)
         cache_file = join(self.loader_folder, my_suffix)
         if isfile(cache_file):
             try:
@@ -88,10 +102,11 @@ class Pyache:
         return np.array(data)
 
     def cleanup(self):
-        self._remove_old_resource(self.folder, self.max_loaders, 'loader::')
-        self._remove_old_resource(self.loader_folder, self.max_loaders, 'cacheblock::')
+        self._remove_old_resource(self.folder, self.max_loaders, 'loader' + self.file_delimiter)
+        self._remove_old_resource(self.loader_folder, self.max_loaders, 'cacheblock' + self.file_delimiter)
 
-    def _remove_old_resource(self, folder, max_count, prefix, my_suffix=None):
+    @staticmethod
+    def _remove_old_resource(folder, max_count, prefix, my_suffix=None):
         remaining = max_count - 1  # Doesn't include ourself
         other_loaders = [i for i in glob(join(folder, prefix + '*/')) if not my_suffix or not i.endswith(my_suffix)]
         if len(other_loaders) > remaining:
