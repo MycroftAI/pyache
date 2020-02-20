@@ -32,7 +32,7 @@ class Pyache:
     """
 
     @property
-    def file_delimiter(self):
+    def file_delimiter(self) -> str:
         """
         Returns:
             an OS dependent string used as a delimiter in file names to improve readability.
