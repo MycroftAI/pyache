@@ -31,12 +31,12 @@ class Pyache:
         max_loaders: Maximum number of loader caches before others are deleted
     """
 
-    """
-    Returns:
-        an OS dependent string used as a delimiter in file names to improve readability.
-    """
     @property
     def file_delimiter(self):
+        """
+        Returns:
+            an OS dependent string used as a delimiter in file names to improve readability.
+        """
         if os_name == "nt":
             return "_"
         else:
