@@ -24,7 +24,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Mycroft AI',
-    author_email='support@mycroft.ai',
+    author_email='dev@mycroft.ai',
     maintainer='Matthew Scholefield',
     maintainer_email='matthew331199@gmail.com',
     url='https://github.com/mycroftai/pyache',
