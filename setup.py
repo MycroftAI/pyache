@@ -13,12 +13,18 @@
 # limitations under the License.
 from setuptools import setup
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name='pyache',
-    version='0.1.0',
+    version='0.2.0',
+    license='Apache2.0',
     description='A simple numpy caching library',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author='Mycroft AI',
-    author_email='support@mycroft.ai',
+    author_email='dev@mycroft.ai',
     maintainer='Matthew Scholefield',
     maintainer_email='matthew331199@gmail.com',
     url='https://github.com/mycroftai/pyache',
